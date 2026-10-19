@@ -8,7 +8,7 @@ Site de culture générale et de mini-jeux. React 19 + TypeScript + Vite + Tailw
 ```bash
 npm install
 npm run dev      # serveur de développement
-npm test         # tests unitaires (node:test, Node ≥ 22.18)
+npm test         # tests unitaires tests/**/*.test.ts (node:test, Node ≥ 22.18)
 npm run build    # vérification TypeScript + build dans dist/
 npm run preview  # prévisualiser le build
 ```
