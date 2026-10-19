@@ -57,9 +57,12 @@ Une sauvegarde illisible ou plus récente est copiée dans `quizhub:save:backup`
 
 ## Publication sur GitHub Pages (gratuit)
 
-1. Créer un dépôt GitHub et y pousser ce dossier sur la branche `main`.
-2. Dans le dépôt : **Settings → Pages → Build and deployment → Source : GitHub Actions**.
-3. Chaque push sur `main` lance `.github/workflows/deploy.yml` (tests + build + déploiement).
+Dépôt : `Trockkk/quiz-hub`, site : https://trockkk.github.io/quiz-hub/
 
-Le site est servi à `https://<utilisateur>.github.io/<dépôt>/`. Le build utilise des chemins relatifs
-et un routage par hash : aucun réglage à modifier selon le nom du dépôt.
+1. Dans le dépôt : **Settings → Pages → Build and deployment → Source : GitHub Actions** (une seule fois).
+2. Chaque push sur `main` lance `.github/workflows/deploy.yml` **à la racine du dépôt**
+   (installation, tests, build de `quiz-hub/`, publication de `quiz-hub/dist`).
+
+`base` dans `vite.config.ts` vaut `/quiz-hub/` pour le build et `npm run preview`
+(→ http://localhost:4173/quiz-hub/) ; le serveur de dev reste sur http://localhost:5173/.
+Si le dépôt est renommé, changer `base` en conséquence.

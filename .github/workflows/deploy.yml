@@ -14,6 +14,11 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# The app lives in the quiz-hub/ subfolder of the repository.
+defaults:
+  run:
+    working-directory: quiz-hub
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,12 +28,14 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: quiz-hub/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: quiz-hub/dist
 
   deploy:
     needs: build
