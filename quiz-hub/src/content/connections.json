@@ -1,0 +1,72 @@
+[
+  { "id": "con-01", "d": 1, "groups": [
+    { "label": "Planètes", "items": ["Mars", "Vénus", "Jupiter", "Saturne"] },
+    { "label": "Fruits rouges", "items": ["Fraise", "Framboise", "Cerise", "Groseille"] },
+    { "label": "Instruments à cordes", "items": ["Violon", "Guitare", "Harpe", "Violoncelle"] },
+    { "label": "Pays nordiques", "items": ["Suède", "Norvège", "Finlande", "Islande"] } ] },
+  { "id": "con-02", "d": 1, "groups": [
+    { "label": "Couleurs", "items": ["Rouge", "Vert", "Bleu", "Jaune"] },
+    { "label": "Animaux de la ferme", "items": ["Vache", "Cochon", "Mouton", "Poule"] },
+    { "label": "Sports de raquette", "items": ["Tennis", "Badminton", "Squash", "Padel"] },
+    { "label": "Pièces de la maison", "items": ["Cuisine", "Salon", "Chambre", "Garage"] } ] },
+  { "id": "con-03", "d": 1, "groups": [
+    { "label": "Félins", "items": ["Lion", "Tigre", "Guépard", "Lynx"] },
+    { "label": "Oiseaux", "items": ["Aigle", "Hibou", "Moineau", "Perroquet"] },
+    { "label": "Poissons", "items": ["Saumon", "Thon", "Truite", "Requin"] },
+    { "label": "Insectes", "items": ["Fourmi", "Abeille", "Papillon", "Coccinelle"] } ] },
+  { "id": "con-04", "d": 2, "groups": [
+    { "label": "Capitales européennes", "items": ["Rome", "Berlin", "Madrid", "Lisbonne"] },
+    { "label": "Mers", "items": ["Baltique", "Caspienne", "Égée", "Adriatique"] },
+    { "label": "Fleuves de France", "items": ["Loire", "Seine", "Garonne", "Rhône"] },
+    { "label": "Monnaies", "items": ["Euro", "Dollar", "Yen", "Rouble"] } ] },
+  { "id": "con-05", "d": 2, "groups": [
+    { "label": "Pièces d'échecs", "items": ["Fou", "Cavalier", "Tour", "Pion"] },
+    { "label": "Cartes à jouer", "items": ["Valet", "Dame", "As", "Joker"] },
+    { "label": "Mousquetaires", "items": ["Athos", "Porthos", "Aramis", "D'Artagnan"] },
+    { "label": "Notes de musique", "items": ["Do", "Ré", "Mi", "Sol"] } ] },
+  { "id": "con-06", "d": 2, "groups": [
+    { "label": "Princesses Disney", "items": ["Cendrillon", "Raiponce", "Ariel", "Mulan"] },
+    { "label": "Pokémon", "items": ["Pikachu", "Salamèche", "Carapuce", "Évoli"] },
+    { "label": "Super-héros Marvel", "items": ["Hulk", "Thor", "Spider-Man", "Iron Man"] },
+    { "label": "Personnages de Mario", "items": ["Luigi", "Peach", "Yoshi", "Bowser"] } ] },
+  { "id": "con-07", "d": 2, "groups": [
+    { "label": "Volcans", "items": ["Etna", "Vésuve", "Fuji", "Kilimandjaro"] },
+    { "label": "Déserts", "items": ["Gobi", "Atacama", "Kalahari", "Namib"] },
+    { "label": "Fleuves d'Asie", "items": ["Mékong", "Gange", "Indus", "Yangzi"] },
+    { "label": "Lacs", "items": ["Titicaca", "Baïkal", "Victoria", "Léman"] } ] },
+  { "id": "con-08", "d": 3, "groups": [
+    { "label": "Sports en « …ball »", "items": ["Basket", "Hand", "Foot", "Volley"] },
+    { "label": "Pâtes italiennes", "items": ["Penne", "Farfalle", "Fusilli", "Tagliatelle"] },
+    { "label": "Danses", "items": ["Tango", "Valse", "Salsa", "Samba"] },
+    { "label": "Maisons de couture", "items": ["Dior", "Chanel", "Gucci", "Prada"] } ] },
+  { "id": "con-09", "d": 3, "groups": [
+    { "label": "Gaz nobles", "items": ["Néon", "Argon", "Hélium", "Radon"] },
+    { "label": "Signes du zodiaque", "items": ["Lion", "Bélier", "Scorpion", "Balance"] },
+    { "label": "Dieux grecs", "items": ["Zeus", "Hermès", "Apollon", "Poséidon"] },
+    { "label": "Dieux romains", "items": ["Mars", "Vulcain", "Neptune", "Mercure"] } ] },
+  { "id": "con-10", "d": 3, "groups": [
+    { "label": "Langages de programmation", "items": ["Ruby", "Rust", "Swift", "Kotlin"] },
+    { "label": "Serpents", "items": ["Cobra", "Vipère", "Boa", "Mamba"] },
+    { "label": "Pierres précieuses", "items": ["Rubis", "Saphir", "Émeraude", "Diamant"] },
+    { "label": "Îles d'Indonésie", "items": ["Bornéo", "Sumatra", "Bali", "Sulawesi"] } ] },
+  { "id": "con-11", "d": 3, "groups": [
+    { "label": "Les Beatles (prénoms)", "items": ["John", "Paul", "George", "Ringo"] },
+    { "label": "Capitales homonymes de leur pays", "items": ["Mexico", "Panama", "Koweït", "Singapour"] },
+    { "label": "Planètes naines", "items": ["Pluton", "Cérès", "Éris", "Makemake"] },
+    { "label": "Chiens de bande dessinée", "items": ["Milou", "Idéfix", "Rantanplan", "Snoopy"] } ] },
+  { "id": "con-12", "d": 3, "groups": [
+    { "label": "Réalisateurs", "items": ["Spielberg", "Nolan", "Tarantino", "Scorsese"] },
+    { "label": "Interprètes de James Bond", "items": ["Connery", "Moore", "Craig", "Brosnan"] },
+    { "label": "Personnages de Star Wars", "items": ["Yoda", "Chewbacca", "Leia", "Vador"] },
+    { "label": "Films Pixar", "items": ["Coco", "Ratatouille", "Cars", "Là-haut"] } ] },
+  { "id": "con-13", "d": 4, "groups": [
+    { "label": "Unités de base du SI (sans nom de savant)", "items": ["Mètre", "Seconde", "Mole", "Candela"] },
+    { "label": "Savants devenus unités", "items": ["Newton", "Pascal", "Watt", "Joule"] },
+    { "label": "Monnaies disparues avec l'euro", "items": ["Franc", "Mark", "Peseta", "Lire"] },
+    { "label": "Coups au tennis", "items": ["Ace", "Lob", "Smash", "Volée"] } ] },
+  { "id": "con-14", "d": 4, "groups": [
+    { "label": "Pomme de …", "items": ["Douche", "Pin", "Discorde", "Adam"] },
+    { "label": "Coup de …", "items": ["Foudre", "Soleil", "Théâtre", "Poing"] },
+    { "label": "Chemin de …", "items": ["Croix", "Ronde", "Halage", "Table"] },
+    { "label": "Mal de …", "items": ["Ventre", "Dos", "Gorge", "Crâne"] } ] }
+]

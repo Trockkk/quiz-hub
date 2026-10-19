@@ -1,39 +1,62 @@
 // Versioned save stored in localStorage. Everything read back is validated: the user (or an old version) may have left anything there.
+import type { Config, Difficulty } from '../core/types'
 
 export const STORAGE_KEY = 'quizhub:save'
 export const BACKUP_KEY = 'quizhub:save:backup'
-export const SAVE_VERSION = 1
-const HISTORY_LIMIT = 30
-
-export const QUESTION_COUNTS = [5, 10, 15, 20]
-export const SECONDS_OPTIONS = [10, 15, 20, 30]
-
-export interface Settings {
-  questionCount: number
-  secondsPerQuestion: number
-}
+export const SAVE_VERSION = 2
+const HISTORY_LIMIT = 60
+const RECENT_LIMIT = 400
+const DAILY_LIMIT = 60
 
 export interface GameRecord {
   best: number
   plays: number
-  totalCorrect: number
-  totalAnswered: number
+  bestStreak: number
   lastPlayed: string
+  /** human-readable settings, e.g. "Difficile · 10 questions · 15 s" */
+  label: string
+}
+
+/** Aggregated stats, keyed by "all", "game:<id>", "portal:<id>", "diff:<n>", "theme:<id>". */
+export interface Agg {
+  plays: number
+  correct: number
+  answered: number
+  timeMs: number
+  bestStreak: number
 }
 
 export interface Session {
   key: string
+  gameId: string
   score: number
   correct: number
-  total: number
+  answered: number
+  avgMs: number
+  bestStreak: number
+  d: Difficulty
   date: string
+  label: string
+}
+
+export interface DailyState {
+  last: string | null
+  streak: number
+  best: number
+  results: Record<string, { score: number; grid: string }>
 }
 
 export interface SaveData {
   version: number
-  settings: Settings
+  player: { name: string }
+  prefs: Record<string, Partial<Config>>
   records: Record<string, GameRecord>
+  stats: Record<string, Agg>
   history: Session[]
+  achievements: Record<string, string>
+  daily: DailyState
+  /** recently seen challenge ids, to avoid repeats */
+  recent: string[]
 }
 
 export interface LoadResult {
@@ -43,47 +66,124 @@ export interface LoadResult {
 
 type Obj = Record<string, unknown>
 
-// Each entry upgrades a save from version N to N+1. Add one (and bump SAVE_VERSION) whenever SaveData changes shape.
-const migrations: Record<number, (save: Obj) => Obj> = {}
-
 export const defaultSave = (): SaveData => ({
   version: SAVE_VERSION,
-  settings: { questionCount: 10, secondsPerQuestion: 20 },
+  player: { name: '' },
+  prefs: {},
   records: {},
+  stats: {},
   history: [],
+  achievements: {},
+  daily: { last: null, streak: 0, best: 0, results: {} },
+  recent: [],
 })
 
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v)
 const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0
 const isDate = (v: unknown): v is string => typeof v === 'string' && !Number.isNaN(Date.parse(v))
-const pick = (v: unknown, allowed: number[], fallback: number) =>
-  typeof v === 'number' && allowed.includes(v) ? v : fallback
+const str = (v: unknown, max = 200) => (typeof v === 'string' ? v.slice(0, max) : '')
+const isDiff = (v: unknown): v is Difficulty => v === 1 || v === 2 || v === 3 || v === 4
+
+// Each entry upgrades a save from version N to N+1. Add one (and bump SAVE_VERSION) whenever SaveData changes shape.
+const migrations: Record<number, (save: Obj) => Obj> = {
+  // v1 (first quiz only) → v2 (platform): settings become the classic quiz preferences, old records are kept.
+  1: (v1) => {
+    const settings = isObj(v1.settings) ? v1.settings : {}
+    const records: Record<string, GameRecord> = {}
+    const all: Agg = { plays: 0, correct: 0, answered: 0, timeMs: 0, bestStreak: 0 }
+    for (const [key, r] of Object.entries(isObj(v1.records) ? v1.records : {})) {
+      if (!isObj(r) || !isCount(r.best) || !isCount(r.plays) || !isCount(r.totalCorrect) || !isCount(r.totalAnswered) || !isDate(r.lastPlayed)) continue
+      const mode = key.split(':')[1] ?? 'all'
+      records[`classic|legacy|${mode}`] = { best: r.best, plays: r.plays, bestStreak: 0, lastPlayed: r.lastPlayed, label: `Ancienne version · ${mode === 'all' ? 'toutes catégories' : mode}` }
+      all.plays += r.plays
+      all.correct += r.totalCorrect
+      all.answered += r.totalAnswered
+    }
+    const history = (Array.isArray(v1.history) ? v1.history : []).filter(isObj).map((s) => ({
+      key: `classic|legacy|${str(s.key).split(':')[1] ?? 'all'}`,
+      gameId: 'classic',
+      score: s.score,
+      correct: s.correct,
+      answered: s.total,
+      avgMs: 0,
+      bestStreak: 0,
+      d: 1,
+      date: s.date,
+      label: 'Ancienne version',
+    }))
+    const qTime = settings.secondsPerQuestion === 10 || settings.secondsPerQuestion === 15 || settings.secondsPerQuestion === 30 ? settings.secondsPerQuestion : 15
+    return {
+      ...defaultSave(),
+      version: 2,
+      prefs: { classic: { count: isCount(settings.questionCount) ? settings.questionCount : 10, questionTime: qTime } },
+      records,
+      stats: { all, 'game:classic': { ...all } },
+      history,
+    }
+  },
+}
+
+function sanitizeAgg(v: unknown): Agg | null {
+  if (!isObj(v) || ![v.plays, v.correct, v.answered, v.timeMs, v.bestStreak].every(isCount)) return null
+  return { plays: v.plays as number, correct: v.correct as number, answered: v.answered as number, timeMs: v.timeMs as number, bestStreak: v.bestStreak as number }
+}
+
+function sanitizePrefs(v: unknown): Partial<Config> {
+  if (!isObj(v)) return {}
+  const out: Partial<Config> = {}
+  if (isDiff(v.difficulty)) out.difficulty = v.difficulty
+  if (isCount(v.count) && v.count <= 100) out.count = v.count
+  if (v.questionTime === null || (isCount(v.questionTime) && v.questionTime <= 600)) out.questionTime = v.questionTime as number | null
+  if (v.totalTime === null || (isCount(v.totalTime) && v.totalTime <= 3600)) out.totalTime = v.totalTime as number | null
+  if (Array.isArray(v.themes)) out.themes = v.themes.filter((t): t is string => typeof t === 'string').slice(0, 20)
+  if (v.answerType === 'qcm' || v.answerType === 'text' || v.answerType === 'mixed') out.answerType = v.answerType
+  for (const k of ['hints', 'explanations', 'shuffle'] as const) if (typeof v[k] === 'boolean') out[k] = v[k] as boolean
+  if (typeof v.variant === 'string') out.variant = str(v.variant, 30)
+  return out
+}
 
 function sanitize(save: Obj): SaveData {
   const base = defaultSave()
-  const settings = isObj(save.settings) ? save.settings : {}
   const records: Record<string, GameRecord> = {}
-  if (isObj(save.records)) {
-    for (const [key, r] of Object.entries(save.records)) {
-      if (isObj(r) && isCount(r.best) && isCount(r.plays) && isCount(r.totalCorrect) && isCount(r.totalAnswered) && isDate(r.lastPlayed)) {
-        records[key] = { best: r.best, plays: r.plays, totalCorrect: r.totalCorrect, totalAnswered: r.totalAnswered, lastPlayed: r.lastPlayed }
-      }
+  for (const [key, r] of Object.entries(isObj(save.records) ? save.records : {})) {
+    if (isObj(r) && isCount(r.best) && isCount(r.plays) && isCount(r.bestStreak) && isDate(r.lastPlayed)) {
+      records[key] = { best: r.best, plays: r.plays, bestStreak: r.bestStreak, lastPlayed: r.lastPlayed, label: str(r.label) }
     }
   }
-  const history = Array.isArray(save.history)
-    ? save.history
-        .filter((s): s is Session => isObj(s) && typeof s.key === 'string' && isCount(s.score) && isCount(s.correct) && isCount(s.total) && isDate(s.date))
-        .map(({ key, score, correct, total, date }) => ({ key, score, correct, total, date }))
-        .slice(0, HISTORY_LIMIT)
-    : []
+  const stats: Record<string, Agg> = {}
+  for (const [key, a] of Object.entries(isObj(save.stats) ? save.stats : {})) {
+    const s = sanitizeAgg(a)
+    if (s) stats[key] = s
+  }
+  const prefs: Record<string, Partial<Config>> = {}
+  for (const [key, p] of Object.entries(isObj(save.prefs) ? save.prefs : {})) prefs[key] = sanitizePrefs(p)
+  const history = (Array.isArray(save.history) ? save.history : [])
+    .filter((s): s is Session => isObj(s) && typeof s.key === 'string' && typeof s.gameId === 'string' && [s.score, s.correct, s.answered, s.avgMs, s.bestStreak].every(isCount) && isDiff(s.d) && isDate(s.date))
+    .map((s) => ({ key: s.key, gameId: s.gameId, score: s.score, correct: s.correct, answered: s.answered, avgMs: s.avgMs, bestStreak: s.bestStreak, d: s.d, date: s.date, label: str(s.label) }))
+    .slice(0, HISTORY_LIMIT)
+  const achievements: Record<string, string> = {}
+  for (const [k, v] of Object.entries(isObj(save.achievements) ? save.achievements : {})) if (isDate(v)) achievements[k] = v
+  const d = isObj(save.daily) ? save.daily : {}
+  const results: DailyState['results'] = {}
+  for (const [day, r] of Object.entries(isObj(d.results) ? d.results : {}).slice(-DAILY_LIMIT)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(day) && isObj(r) && isCount(r.score)) results[day] = { score: r.score, grid: str(r.grid, 100) }
+  }
+  const player = isObj(save.player) ? save.player : {}
   return {
     version: SAVE_VERSION,
-    settings: {
-      questionCount: pick(settings.questionCount, QUESTION_COUNTS, base.settings.questionCount),
-      secondsPerQuestion: pick(settings.secondsPerQuestion, SECONDS_OPTIONS, base.settings.secondsPerQuestion),
-    },
+    player: { name: str(player.name, 20) },
+    prefs,
     records,
+    stats,
     history,
+    achievements,
+    daily: {
+      last: typeof d.last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.last) ? d.last : null,
+      streak: isCount(d.streak) ? d.streak : 0,
+      best: isCount(d.best) ? d.best : 0,
+      results,
+    },
+    recent: (Array.isArray(save.recent) ? save.recent : base.recent).filter((x): x is string => typeof x === 'string').slice(-RECENT_LIMIT),
   }
 }
 
@@ -137,32 +237,53 @@ export function writeSave(data: SaveData): string | null {
   }
 }
 
-export function totals(data: SaveData) {
-  const records = Object.values(data.records)
-  const plays = records.reduce((s, r) => s + r.plays, 0)
-  const answered = records.reduce((s, r) => s + r.totalAnswered, 0)
-  const correct = records.reduce((s, r) => s + r.totalCorrect, 0)
+export interface SessionInput extends Session {
+  portal: string
+  /** theme → [correct, answered] */
+  perTheme: Record<string, [number, number]>
+  timeMs: number
+  seen: string[]
+}
+
+const addAgg = (a: Agg | undefined, s: SessionInput, correct = s.correct, answered = s.answered): Agg => ({
+  plays: (a?.plays ?? 0) + 1,
+  correct: (a?.correct ?? 0) + correct,
+  answered: (a?.answered ?? 0) + answered,
+  timeMs: (a?.timeMs ?? 0) + s.timeMs,
+  bestStreak: Math.max(a?.bestStreak ?? 0, s.bestStreak),
+})
+
+/** Pure: adds a finished game, updates the personal record and every statistic. */
+export function addSession(data: SaveData, s: SessionInput): { data: SaveData; isRecord: boolean; previousBest: number | null } {
+  const prev = data.records[s.key]
+  const isRecord = s.score > (prev?.best ?? 0)
+  const stats = { ...data.stats }
+  for (const k of ['all', `game:${s.gameId}`, `portal:${s.portal}`, `diff:${s.d}`]) stats[k] = addAgg(stats[k], s)
+  for (const [theme, [c, n]] of Object.entries(s.perTheme)) stats[`theme:${theme}`] = addAgg(stats[`theme:${theme}`], s, c, n)
+  const { portal: _p, perTheme: _t, timeMs: _m, seen, ...session } = s
   return {
-    plays,
-    correct,
-    accuracy: answered ? Math.round((correct / answered) * 100) : 0,
-    best: Math.max(0, ...records.map((r) => r.best)),
+    isRecord,
+    previousBest: prev?.best ?? null,
+    data: {
+      ...data,
+      records: {
+        ...data.records,
+        [s.key]: { best: Math.max(prev?.best ?? 0, s.score), plays: (prev?.plays ?? 0) + 1, bestStreak: Math.max(prev?.bestStreak ?? 0, s.bestStreak), lastPlayed: s.date, label: s.label },
+      },
+      stats,
+      history: [session, ...data.history].slice(0, HISTORY_LIMIT),
+      recent: [...data.recent.filter((id) => !seen.includes(id)), ...seen].slice(-RECENT_LIMIT),
+    },
   }
 }
 
-/** Pure: adds a finished session, updates the personal record. */
-export function addSession(data: SaveData, session: Session): { data: SaveData; isRecord: boolean } {
-  const prev = data.records[session.key]
-  const isRecord = session.score > (prev?.best ?? 0)
-  const record: GameRecord = {
-    best: Math.max(prev?.best ?? 0, session.score),
-    plays: (prev?.plays ?? 0) + 1,
-    totalCorrect: (prev?.totalCorrect ?? 0) + session.correct,
-    totalAnswered: (prev?.totalAnswered ?? 0) + session.total,
-    lastPlayed: session.date,
-  }
-  return {
-    data: { ...data, records: { ...data.records, [session.key]: record }, history: [session, ...data.history].slice(0, HISTORY_LIMIT) },
-    isRecord,
-  }
+/** Pure: records the daily challenge (only the first game of the day counts). */
+export function addDaily(data: SaveData, day: string, score: number, grid: string): SaveData {
+  if (data.daily.results[day]) return data
+  const yesterday = new Date(Date.parse(`${day}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10)
+  const streak = data.daily.last === yesterday ? data.daily.streak + 1 : 1
+  const results = Object.fromEntries(Object.entries({ ...data.daily.results, [day]: { score, grid } }).slice(-DAILY_LIMIT))
+  return { ...data, daily: { last: day, streak, best: Math.max(data.daily.best, streak), results } }
 }
+
+export const accuracy = (a?: Agg) => (a?.answered ? Math.round((a.correct / a.answered) * 100) : 0)

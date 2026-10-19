@@ -32,6 +32,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Public URL of the multiplayer server (repository variable, not a secret). Empty = multiplayer shown as not configured.
+          VITE_MP_URL: ${{ vars.MP_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

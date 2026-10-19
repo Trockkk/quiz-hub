@@ -1,0 +1,44 @@
+[
+  { "id": "rar-gaz", "d": 2, "prompt": "Cite un élément chimique gazeux à température ambiante.", "rule": "Barème éditorial : éléments de la vie courante (courant) → gaz nobles lourds (très rare).", "answers": [
+    { "n": "Oxygène", "tier": 1 }, { "n": "Hydrogène", "tier": 1 }, { "n": "Azote", "tier": 1 }, { "n": "Hélium", "tier": 1 },
+    { "n": "Néon", "tier": 2 }, { "n": "Chlore", "tier": 2 },
+    { "n": "Argon", "tier": 3 }, { "n": "Fluor", "tier": 3 }, { "n": "Krypton", "tier": 3 },
+    { "n": "Xénon", "tier": 4 }, { "n": "Radon", "tier": 4 } ] },
+  { "id": "rar-planete", "d": 1, "prompt": "Cite une planète du Système solaire.", "rule": "Barème éditorial : planètes les plus citées (courant) → planètes lointaines (rare).", "answers": [
+    { "n": "Terre", "tier": 1 }, { "n": "Mars", "tier": 1 }, { "n": "Jupiter", "tier": 1 },
+    { "n": "Saturne", "tier": 2 }, { "n": "Vénus", "tier": 2 },
+    { "n": "Mercure", "tier": 3 }, { "n": "Uranus", "tier": 3 }, { "n": "Neptune", "tier": 3 } ] },
+  { "id": "rar-onu", "d": 2, "prompt": "Cite une langue officielle de l'ONU.", "rule": "Barème éditorial : langues les plus étudiées en France (courant) → moins associées à l'ONU (rare).", "answers": [
+    { "n": "Anglais", "tier": 1 }, { "n": "Français", "tier": 1 },
+    { "n": "Espagnol", "tier": 2 }, { "n": "Chinois", "alt": ["Mandarin"], "tier": 2 },
+    { "n": "Russe", "tier": 3 }, { "n": "Arabe", "tier": 3 } ] },
+  { "id": "rar-equateur", "d": 3, "prompt": "Cite un pays traversé par l'équateur.", "rule": "Barème éditorial : pays évidents (courant) → petits États insulaires (très rare).", "answers": [
+    { "n": "Équateur", "tier": 1 }, { "n": "Brésil", "tier": 1 },
+    { "n": "Colombie", "tier": 2 }, { "n": "Indonésie", "tier": 2 }, { "n": "Kenya", "tier": 2 },
+    { "n": "Gabon", "tier": 3 }, { "n": "Ouganda", "tier": 3 }, { "n": "République démocratique du Congo", "alt": ["RDC", "Congo-Kinshasa"], "tier": 3 }, { "n": "République du Congo", "alt": ["Congo-Brazzaville"], "tier": 3 }, { "n": "Somalie", "tier": 3 },
+    { "n": "Sao Tomé-et-Principe", "tier": 4 }, { "n": "Maldives", "tier": 4 }, { "n": "Kiribati", "tier": 4 } ] },
+  { "id": "rar-cee", "d": 2, "prompt": "Cite un des six pays fondateurs de la CEE (1957).", "rule": "Barème éditorial : grands pays (courant) → plus petits (rare).", "answers": [
+    { "n": "France", "tier": 1 }, { "n": "Allemagne", "alt": ["RFA", "Allemagne de l'Ouest"], "tier": 1 },
+    { "n": "Italie", "tier": 2 }, { "n": "Belgique", "tier": 2 },
+    { "n": "Pays-Bas", "alt": ["Hollande"], "tier": 3 }, { "n": "Luxembourg", "tier": 4 } ] },
+  { "id": "rar-vent", "d": 2, "prompt": "Cite un instrument de musique à vent.", "rule": "Barème éditorial : instruments enseignés à l'école (courant) → instruments traditionnels (très rare).", "answers": [
+    { "n": "Flûte", "alt": ["Flûte traversière", "Flûte à bec"], "tier": 1 }, { "n": "Trompette", "tier": 1 }, { "n": "Saxophone", "alt": ["Saxo"], "tier": 1 },
+    { "n": "Clarinette", "tier": 2 }, { "n": "Trombone", "tier": 2 }, { "n": "Harmonica", "tier": 2 }, { "n": "Tuba", "tier": 2 },
+    { "n": "Hautbois", "tier": 3 }, { "n": "Basson", "tier": 3 }, { "n": "Cor", "alt": ["Cor d'harmonie"], "tier": 3 }, { "n": "Cornemuse", "tier": 3 }, { "n": "Piccolo", "tier": 3 },
+    { "n": "Didgeridoo", "tier": 4 }, { "n": "Ocarina", "tier": 4 }, { "n": "Cor anglais", "tier": 4 }, { "n": "Sousaphone", "tier": 4 }, { "n": "Euphonium", "tier": 4 }, { "n": "Duduk", "tier": 4 } ] },
+  { "id": "rar-antarctique", "d": 3, "prompt": "Cite un animal vivant en Antarctique ou dans l'océan Austral.", "rule": "Barème éditorial : animaux emblématiques (courant) → espèces peu connues (très rare).", "answers": [
+    { "n": "Manchot", "alt": ["Manchot empereur"], "tier": 1 },
+    { "n": "Orque", "tier": 2 }, { "n": "Baleine bleue", "tier": 2 }, { "n": "Phoque", "tier": 2 },
+    { "n": "Manchot Adélie", "tier": 3 }, { "n": "Léopard de mer", "tier": 3 }, { "n": "Krill", "tier": 3 }, { "n": "Albatros", "tier": 3 }, { "n": "Phoque de Weddell", "tier": 3 }, { "n": "Éléphant de mer", "tier": 3 },
+    { "n": "Pétrel des neiges", "tier": 4 }, { "n": "Skua", "alt": ["Labbe"], "tier": 4 }, { "n": "Phoque crabier", "tier": 4 }, { "n": "Poisson des glaces", "tier": 4 }, { "n": "Belgica antarctica", "tier": 4 } ] },
+  { "id": "rar-mario", "d": 2, "prompt": "Cite un personnage de l'univers Super Mario (autre que Mario).", "rule": "Barème éditorial : personnages principaux (courant) → personnages secondaires (très rare).", "answers": [
+    { "n": "Luigi", "tier": 1 }, { "n": "Peach", "alt": ["Princesse Peach"], "tier": 1 }, { "n": "Bowser", "tier": 1 }, { "n": "Yoshi", "tier": 1 },
+    { "n": "Toad", "tier": 2 }, { "n": "Wario", "tier": 2 }, { "n": "Daisy", "alt": ["Princesse Daisy"], "tier": 2 }, { "n": "Donkey Kong", "tier": 2 }, { "n": "Koopa", "alt": ["Koopa Troopa"], "tier": 2 },
+    { "n": "Waluigi", "tier": 3 }, { "n": "Harmonie", "alt": ["Rosalina"], "tier": 3 }, { "n": "Boo", "tier": 3 }, { "n": "Bowser Jr.", "alt": ["Bowser Junior"], "tier": 3 }, { "n": "Maskass", "alt": ["Shy Guy"], "tier": 3 },
+    { "n": "Kamek", "tier": 4 }, { "n": "Lakitu", "tier": 4 }, { "n": "Birdo", "tier": 4 }, { "n": "Pauline", "tier": 4 }, { "n": "Toadette", "tier": 4 } ] },
+  { "id": "rar-pixar", "d": 2, "prompt": "Cite un long métrage des studios Pixar.", "rule": "Barème éditorial : grands succès (courant) → films moins connus (très rare).", "answers": [
+    { "n": "Toy Story", "tier": 1 }, { "n": "Le Monde de Nemo", "alt": ["Nemo"], "tier": 1 }, { "n": "Cars", "tier": 1 },
+    { "n": "Ratatouille", "tier": 2 }, { "n": "Là-haut", "tier": 2 }, { "n": "WALL-E", "tier": 2 }, { "n": "Coco", "tier": 2 }, { "n": "Les Indestructibles", "tier": 2 }, { "n": "Monstres et Cie", "tier": 2 }, { "n": "Vice-versa", "tier": 2 }, { "n": "Le Monde de Dory", "alt": ["Dory"], "tier": 2 },
+    { "n": "1001 pattes", "alt": ["Mille et une pattes"], "tier": 3 }, { "n": "Rebelle", "tier": 3 }, { "n": "Soul", "tier": 3 }, { "n": "Luca", "tier": 3 }, { "n": "Alerte rouge", "tier": 3 }, { "n": "Élémentaire", "tier": 3 }, { "n": "Monstres Academy", "tier": 3 }, { "n": "Buzz l'Éclair", "tier": 3 },
+    { "n": "Le Voyage d'Arlo", "tier": 4 }, { "n": "En avant", "tier": 4 } ] }
+]

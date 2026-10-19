@@ -1,0 +1,20 @@
+[
+  { "id": "rk-planet-dist", "label": "Planètes", "prop": "distance moyenne au Soleil", "unit": "millions de km", "src": "NASA Planetary Fact Sheet", "items": [
+    { "n": "Mercure", "v": 57.9 }, { "n": "Vénus", "v": 108.2 }, { "n": "Terre", "v": 149.6 }, { "n": "Mars", "v": 228 },
+    { "n": "Jupiter", "v": 778.5 }, { "n": "Saturne", "v": 1432 }, { "n": "Uranus", "v": 2867 }, { "n": "Neptune", "v": 4515 } ] },
+  { "id": "rk-planet-size", "label": "Planètes", "prop": "diamètre équatorial", "unit": "km", "src": "NASA Planetary Fact Sheet", "items": [
+    { "n": "Mercure", "v": 4879 }, { "n": "Mars", "v": 6792 }, { "n": "Vénus", "v": 12104 }, { "n": "Terre", "v": 12756 },
+    { "n": "Neptune", "v": 49528 }, { "n": "Uranus", "v": 51118 }, { "n": "Saturne", "v": 120536 }, { "n": "Jupiter", "v": 142984 } ] },
+  { "id": "rk-mountains", "label": "Sommets", "prop": "altitude", "unit": "m", "src": "Encyclopædia Britannica / mesures officielles", "items": [
+    { "n": "Everest", "v": 8849 }, { "n": "K2", "v": 8611 }, { "n": "Aconcagua", "v": 6961 }, { "n": "Denali", "v": 6190 },
+    { "n": "Kilimandjaro", "v": 5895 }, { "n": "Elbrouz", "v": 5642 }, { "n": "Mont Blanc", "v": 4805 }, { "n": "Mont Fuji", "v": 3776 },
+    { "n": "Etna", "v": 3357 }, { "n": "Puy de Dôme", "v": 1465 } ] },
+  { "id": "rk-rivers", "label": "Fleuves", "prop": "longueur", "unit": "km", "src": "Encyclopædia Britannica", "items": [
+    { "n": "Nil", "v": 6650 }, { "n": "Yangzi Jiang", "v": 6300 }, { "n": "Congo", "v": 4700 }, { "n": "Mékong", "v": 4350 },
+    { "n": "Volga", "v": 3530 }, { "n": "Danube", "v": 2850 }, { "n": "Gange", "v": 2525 }, { "n": "Rhin", "v": 1233 },
+    { "n": "Loire", "v": 1006 }, { "n": "Seine", "v": 777 } ] },
+  { "id": "rk-buildings", "label": "Constructions", "prop": "hauteur", "unit": "m", "src": "Council on Tall Buildings and Urban Habitat / gestionnaires", "items": [
+    { "n": "Burj Khalifa", "v": 828 }, { "n": "Tokyo Skytree", "v": 634 }, { "n": "One World Trade Center", "v": 541 },
+    { "n": "Empire State Building (antenne comprise)", "v": 443 }, { "n": "Tour Eiffel", "v": 330 }, { "n": "Tour Montparnasse", "v": 210 },
+    { "n": "Grande pyramide de Gizeh (aujourd'hui)", "v": 139 }, { "n": "Statue de la Liberté (socle compris)", "v": 93 } ] }
+]

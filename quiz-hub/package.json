@@ -8,9 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "node --test \"tests/**/*.test.ts\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "logos": "node scripts/build-logos.mjs"
   },
   "dependencies": {
+    "flag-icons": "^7.6.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -21,6 +23,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "oxlint": "^1.88.0",
+    "simple-icons": "^16.35.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~7.0.2",
     "vite": "^8.3.4"

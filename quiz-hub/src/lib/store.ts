@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import { addSession, defaultSave, loadSave, writeSave, type SaveData, type Session } from './storage'
+import { newAchievements, type Achievement } from './achievements'
+import { addDaily, addSession, defaultSave, loadSave, parseSave, writeSave, type SaveData, type SessionInput } from './storage'
 
 let state = loadSave()
 const listeners = new Set<() => void>()
@@ -16,15 +17,36 @@ function set(data: SaveData, error = writeSave(data) ?? state.error) {
 
 export const useSave = () => useSyncExternalStore(subscribe, () => state)
 
+export const getSave = () => state.data
+
 export const updateSave = (fn: (data: SaveData) => SaveData) => set(fn(state.data))
 
 export const dismissStorageError = () => set(state.data, null)
 
 export const resetSave = () => set(defaultSave())
 
-/** Records a finished game and returns whether it beat the personal record. */
-export function recordSession(session: Session): boolean {
+export interface RecordResult {
+  isRecord: boolean
+  previousBest: number | null
+  achievements: Achievement[]
+}
+
+/** Records a finished game: record, stats, history, achievements (and the daily challenge). */
+export function recordSession(session: SessionInput, daily?: { day: string; grid: string }): RecordResult {
   const result = addSession(state.data, session)
-  set(result.data)
-  return result.isRecord
+  let data = result.data
+  if (daily) data = addDaily(data, daily.day, session.score, daily.grid)
+  const unlocked = newAchievements(data, session)
+  const date = new Date().toISOString()
+  data = { ...data, achievements: { ...data.achievements, ...Object.fromEntries(unlocked.map((a) => [a.id, date])) } }
+  set(data)
+  return { isRecord: result.isRecord, previousBest: result.previousBest, achievements: unlocked }
+}
+
+/** Imports a save exported from the settings page. Returns an error message or null. */
+export function importSave(raw: string): string | null {
+  const { data, error } = parseSave(raw)
+  if (error) return error
+  set(data)
+  return null
 }

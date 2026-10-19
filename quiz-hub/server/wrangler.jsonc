@@ -1,0 +1,16 @@
+// Cloudflare Worker for Quiz Hub multiplayer rooms (free plan compatible: SQLite-backed Durable Objects).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quiz-hub-multi",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "RoomObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RoomObject"] }],
+  "vars": {
+    // Sites allowed to open rooms (comma-separated). Not a secret.
+    "ALLOWED_ORIGINS": "https://trockkk.github.io,http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173"
+  },
+  "observability": { "enabled": true }
+}

@@ -6,12 +6,24 @@
   --color-ink-900: #0d0f1c;
   --color-ink-800: #151829;
   --animate-pop: pop 0.35s ease-out both;
+  --animate-shake: shake 0.4s ease-in-out;
 }
 
 @keyframes pop {
   from {
     opacity: 0;
     transform: translateY(6px) scale(0.98);
+  }
+}
+
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
   }
 }
 

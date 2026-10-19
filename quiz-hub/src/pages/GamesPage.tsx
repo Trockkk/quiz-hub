@@ -1,16 +1,11 @@
-import { GameCard, PageHeader } from '../components/ui'
-import { games } from '../games/registry'
+import { GAMES } from '../core/catalog'
+import { GameBrowser, PageHeader } from '../components/ui'
 
 export function GamesPage() {
   return (
     <>
-      <PageHeader title="Jeux" subtitle="Choisissez un mini-jeu et un mode." />
-      <div className="grid gap-4">
-        {games.map((g) => (
-          <GameCard key={g.id} game={g} />
-        ))}
-      </div>
-      <p className="mt-6 text-center text-sm text-slate-500">D’autres mini-jeux arrivent bientôt…</p>
+      <PageHeader title="Tous les jeux" subtitle={`${GAMES.length} mini-jeux : recherchez par nom, niveau, type ou mode.`} />
+      <GameBrowser games={GAMES} autoFocus />
     </>
   )
 }
