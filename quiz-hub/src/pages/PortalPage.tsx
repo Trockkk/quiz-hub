@@ -27,7 +27,7 @@ export function PortalPage({ id }: { id: string }) {
         </div>
       </div>
 
-      {id === 'multi' && (
+      {(id === 'multi' || id === 'football') && (
         <div className="card mb-8 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-lg font-bold">Créer ou rejoindre un salon privé</p>

@@ -15,9 +15,9 @@ export function describeConfig(game: GameMeta, c: Config): string {
   const o = game.options
   const parts: string[] = []
   parts.push(o.difficulty ? DIFFICULTY_LABELS[c.difficulty] : (game.fixedDifficulty?.split(' :')[0] ?? 'Standard'))
-  if (o.count) parts.push(`${c.count} ${game.id === 'listing' || game.id.startsWith('duel') ? 'manches' : game.id === 'connections' || game.id === 'detective' ? 'énigmes' : 'questions'}`)
+  if (o.count) parts.push(`${c.count} ${game.id === 'listing' || game.id.startsWith('duel') || game.id === 'foot-squads' ? 'manches' : game.id === 'foot-chain' ? 'runs' : game.id === 'connections' || game.id === 'detective' ? 'énigmes' : 'questions'}`)
   if (o.totalTime) parts.push(`partie ${fmtTime(c.totalTime)}`)
-  if (o.questionTime) parts.push(`${fmtTime(c.questionTime)} par ${game.id === 'listing' ? 'manche' : 'question'}`)
+  if (o.questionTime) parts.push(`${fmtTime(c.questionTime)} par ${game.id === 'listing' || game.id === 'foot-squads' ? 'manche' : game.id === 'foot-chain' ? 'tour' : 'question'}`)
   if (o.answerType && o.answerType.length > 1) parts.push(ANSWER_LABELS[c.answerType])
   if (o.variants) parts.push(o.variants.find((v) => v.id === c.variant)?.label ?? '')
   if (o.themes && c.themes.length) parts.push(`${c.themes.length} thème${c.themes.length > 1 ? 's' : ''}`)

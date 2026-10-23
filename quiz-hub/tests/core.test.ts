@@ -6,7 +6,10 @@ import { seeded } from '../src/core/rng.ts'
 import { grade, orderRatio, scoreAnswer } from '../src/core/scoring.ts'
 import { findAnswer, matches, normalize } from '../src/core/text.ts'
 import type { Challenge, Config, Difficulty, Response } from '../src/core/types.ts'
-import { content } from '../src/content/index.ts'
+import { content, loadFootballers } from '../src/content/index.ts'
+import { findFootballers, teammates } from '../src/core/games/football.ts'
+
+await loadFootballers()
 
 /** The perfect response to a challenge. */
 function perfect(ch: Challenge): Response {
@@ -75,6 +78,17 @@ test('generation is reproducible with the same seed (daily / multiplayer fairnes
   assert.equal(d1.length, 10)
   assert.notDeepEqual(d1, daily({ content, config: configFor(getGame('daily')!), rng: Math.random }, '2026-10-20'))
   assert.match(todayKey(new Date('2026-10-19T23:30:00Z')), /^2026-10-19$/)
+})
+
+test('football: teammates need overlapping spans, names resolve to the most famous player', () => {
+  const find = (n: string) => findFootballers(content, n)[0]
+  assert.ok(content.footballers.length > 10_000, 'the Wikidata base is loaded')
+  assert.match(teammates(find('Lionel Messi'), find('Neymar'))!, /Barcelone/)
+  assert.equal(teammates(find('Zidane'), find('Kylian Mbappé')), null)
+  assert.match(teammates(find('Kanté'), find('Hugo Lloris'))!, /sélection France/)
+  assert.equal(find('mbape').n, 'Kylian Mbappé', 'surname only, with a typo')
+  assert.ok(findFootballers(content, 'Mbappé').length >= 2, 'homonyms are all candidates')
+  assert.deepEqual(findFootballers(content, 'zzzzqx'), [])
 })
 
 test('typed answers: accents, case, articles and small typos, but no confusion between countries', () => {

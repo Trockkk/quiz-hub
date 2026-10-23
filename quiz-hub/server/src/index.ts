@@ -1,7 +1,7 @@
 // Quiz Hub multiplayer server: one Durable Object per room, WebSockets with hibernation.
 // All game rules live in ../../src/core/room.ts (shared with the website and unit-tested).
 import { DurableObject } from 'cloudflare:workers'
-import { content } from '../../src/content/index.ts'
+import { content, loadFootballers } from '../../src/content/index.ts'
 import { CODE_ALPHABET, CODE_LENGTH, isRoomCode, type ClientMessage, type ServerMessage } from '../../src/core/protocol.ts'
 import { Room, createRoom, type RoomData } from '../../src/core/room.ts'
 
@@ -81,6 +81,8 @@ export class RoomObject extends DurableObject<Env> {
   }
 
   private async load(): Promise<RoomData | null> {
+    // Every room message goes through here: the football base is ready before any game logic runs.
+    await loadFootballers()
     if (this.data === undefined) this.data = (await this.ctx.storage.get<RoomData>('room')) ?? null
     return this.data
   }

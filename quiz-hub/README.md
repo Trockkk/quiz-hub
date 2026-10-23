@@ -19,6 +19,7 @@ npm run build      # vérification TypeScript + build dans dist/
 npm run preview    # build servi comme sur GitHub Pages : http://localhost:4173/quiz-hub/
 npm run lint       # oxlint
 npm run logos      # après modification de src/content/logos.json
+npm run footballers  # régénère la base des footballeurs depuis Wikidata (quelques minutes)
 
 # Serveur multijoueur local (dans un second terminal)
 cd server && npm install && npm run dev   # http://localhost:8787 (déjà configuré dans .env.development)

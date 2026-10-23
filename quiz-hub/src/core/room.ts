@@ -3,11 +3,12 @@
 import { configFor, getGame, rulesFor } from './catalog.ts'
 import {
   COUNTDOWN_MS, GRACE_MS, MAX_PLAYERS, MULTI_KINDS, REVEAL_MS, TURN_MS, cleanName, revealOf, toPublic, validResponse,
-  type ClientMessage, type PlayerFinal, type PlayerRoundResult, type PublicRoom, type ServerMessage,
+  type ChainRun, type ClientMessage, type PlayerFinal, type PlayerRoundResult, type PublicRoom, type ServerMessage,
 } from './protocol.ts'
 import { seeded } from './rng.ts'
 import { DIFF_MULT, LIST_POINTS, grade, scoreAnswer } from './scoring.ts'
 import { findAnswer, firstLetter, lastLetter } from './text.ts'
+import { findFootballers, footballerById, teammates } from './games/football.ts'
 import type { Challenge, Config, Content, Response } from './types.ts'
 
 export interface PlayerState {
@@ -45,6 +46,7 @@ export interface RoomData {
   turn: { order: string[]; pos: number; deadline: number; used: string[] } | null
   reveal: PublicRoom['reveal']
   final: PlayerFinal[] | null
+  runs: ChainRun[]
 }
 
 export type Outgoing = { to: string; msg: ServerMessage }
@@ -67,7 +69,7 @@ export function createRoom(code: string, now: number): RoomData {
   return {
     code, createdAt: now, lastActivity: now, hostId: null, players: [], nextPlayerNo: 1, phase: 'lobby',
     gameId: DEFAULT_GAME, config: multiConfig(DEFAULT_GAME), challenges: [], index: 0, questionStart: 0, deadline: null,
-    answers: {}, turn: null, reveal: null, final: null,
+    answers: {}, turn: null, reveal: null, final: null, runs: [],
   }
 }
 
@@ -87,8 +89,17 @@ export class Room {
     return this.data.challenges[this.data.index]
   }
 
+  /** Teammate chain: turns like "last one standing", but the first mistake ends the run. */
+  private get chainMode() {
+    return this.data.gameId === 'foot-chain'
+  }
+
   private get turnMode() {
-    return this.data.gameId === 'duel-categories' && this.data.config.variant === 'last'
+    return (this.data.gameId === 'duel-categories' && this.data.config.variant === 'last') || this.chainMode
+  }
+
+  private get turnMs() {
+    return this.chainMode ? (this.data.config.questionTime ?? 15) * 1000 : TURN_MS
   }
 
   player(id: string) {
@@ -154,7 +165,11 @@ export class Room {
     if (this.data.phase !== 'question') return
     if (this.turnMode && this.data.turn) {
       const current = this.player(this.data.turn.order[this.data.turn.pos])
-      if (!current?.connected) this.eliminateCurrent(now)
+      // A disconnected player only loses their turn in a chain: the run goes on.
+      if (!current?.connected) {
+        if (this.chainMode) this.advanceTurn(now)
+        else this.eliminateCurrent(now)
+      }
     } else if (this.allAnswered()) this.closeQuestion(now)
   }
 
@@ -197,6 +212,7 @@ export class Room {
         for (const pl of d.players) Object.assign(pl, { score: 0, correct: 0, answered: 0, timeMs: 0, streak: 0, bestStreak: 0, found: [], alive: true })
         d.final = null
         d.reveal = null
+        d.runs = []
         d.phase = 'countdown'
         d.deadline = now + COUNTDOWN_MS
         return []
@@ -238,10 +254,11 @@ export class Room {
     const d = this.data
     const ch = this.ch
     if (d.phase !== 'question' || !ch || ch.kind !== 'list' || msg.index !== d.index || typeof msg.text !== 'string' || msg.text.length > 100) return []
-    const i = findAnswer(ch.answers.map((a) => [a.n, ...(a.alt ?? [])]), msg.text, ch.exclusive)
     if (this.turnMode) {
       const t = d.turn
       if (!t || t.order[t.pos] !== p.id) return [ack(p.id, false, 'Ce n’est pas votre tour.')]
+      if (this.chainMode) return this.chainGuess(p, msg.text, now)
+      const i = findAnswer(ch.answers.map((a) => [a.n, ...(a.alt ?? [])]), msg.text, ch.exclusive)
       if (i < 0) return [ack(p.id, false, `« ${msg.text} » n’est pas valide.`)]
       const name = ch.answers[i].n
       if (t.used.includes(name)) return [ack(p.id, false, `${name} a déjà été cité.`)]
@@ -251,6 +268,7 @@ export class Room {
       return [ack(p.id, true, `✓ ${name}`, p.found)]
     }
     if (d.deadline !== null && now > d.deadline + GRACE_MS) return [ack(p.id, false, 'Trop tard !')]
+    const i = findAnswer(ch.answers.map((a) => [a.n, ...(a.alt ?? [])]), msg.text, ch.exclusive)
     if (i < 0) return [ack(p.id, false, `« ${msg.text} » n’est pas valide.`, p.found)]
     const name = ch.answers[i].n
     if (p.found.includes(name)) return [ack(p.id, false, `${name} : déjà trouvé.`, p.found)]
@@ -261,16 +279,46 @@ export class Room {
     return [ack(p.id, true, `✓ ${name}`, p.found)]
   }
 
+  /**
+   * Teammate chain. A name can designate several footballers (homonyms, surname only):
+   * the most famous one who played with the previous player is taken.
+   * Unknown or already cited: the player simply tries again. Never played together: the run ends.
+   */
+  private chainGuess(p: PlayerState, text: string, now: number): Outgoing[] {
+    const d = this.data
+    const run = d.runs[d.index]
+    const prev = footballerById(this.content, run.links.at(-1)!.id)!
+    const candidates = findFootballers(this.content, text)
+    if (!candidates.length) return [ack(p.id, false, `« ${text} » : joueur introuvable, essayez un autre nom.`)]
+    const cited = new Set(run.links.map((l) => l.id))
+    const mates = candidates.filter((f) => teammates(prev, f))
+    const pick = mates.find((f) => !cited.has(f.id))
+    if (!pick && (mates.length || candidates.every((f) => cited.has(f.id)))) return [ack(p.id, false, 'Joueur déjà cité')]
+    if (!pick) {
+      const named = candidates.find((f) => !cited.has(f.id))!
+      p.alive = false
+      run.end = `❌ ${p.name} : ${named.n} n’a jamais joué avec ${prev.n}.`
+      this.closeQuestion(now)
+      return [ack(p.id, false, `${named.n} n’a jamais joué avec ${prev.n}.`)]
+    }
+    const via = teammates(prev, pick)!
+    run.links.push({ id: pick.id, name: pick.n, by: p.name, via })
+    d.turn!.used.push(pick.n)
+    p.found.push(pick.n)
+    this.advanceTurn(now)
+    return [ack(p.id, true, `✓ ${pick.n} — ${via}`, p.found)]
+  }
+
   private advanceTurn(now: number) {
     const t = this.data.turn!
     const alive = t.order.filter((id) => this.player(id)?.alive && this.player(id)?.connected)
-    if (alive.length <= 1 && t.order.length > 1) return this.closeQuestion(now)
+    if (!this.chainMode && alive.length <= 1 && t.order.length > 1) return this.closeQuestion(now)
     for (let step = 1; step <= t.order.length; step++) {
       const pos = (t.pos + step) % t.order.length
       const pl = this.player(t.order[pos])
       if (pl?.alive && pl.connected) {
         t.pos = pos
-        t.deadline = now + TURN_MS
+        t.deadline = now + this.turnMs
         return
       }
     }
@@ -282,6 +330,10 @@ export class Room {
     if (!t) return
     const pl = this.player(t.order[t.pos])
     if (pl) pl.alive = false
+    if (this.chainMode) {
+      this.data.runs[this.data.index].end = `⏱️ ${pl?.name ?? 'Un joueur'} n’a pas trouvé à temps.`
+      return this.closeQuestion(now)
+    }
     const alive = t.order.filter((id) => this.player(id)?.alive && this.player(id)?.connected)
     if (alive.length <= (t.order.length > 1 ? 1 : 0)) return this.closeQuestion(now)
     this.advanceTurn(now)
@@ -302,7 +354,10 @@ export class Room {
       const order = [...this.connected()].sort((a, b) => a.joinedAt - b.joinedAt).map((p) => p.id)
       // Rotate who starts at each round.
       const start = order.length ? index % order.length : 0
-      d.turn = { order: [...order.slice(start), ...order.slice(0, start)], pos: 0, deadline: now + TURN_MS, used: [] }
+      const ch = this.ch
+      const first = ch?.kind === 'list' && ch.start !== undefined ? footballerById(this.content, ch.start) : undefined
+      d.turn = { order: [...order.slice(start), ...order.slice(0, start)], pos: 0, deadline: now + this.turnMs, used: first ? [first.n] : [] }
+      if (this.chainMode) d.runs[index] = { links: first ? [{ id: first.id, name: first.n, by: null, via: null }] : [], end: null }
       d.deadline = null
     } else {
       d.turn = null
@@ -327,8 +382,10 @@ export class Room {
       const timeMs = a ? a.at - d.questionStart : (limitMs ?? now - d.questionStart)
       return { p, response, g, timeMs }
     })
-    const winners = this.turnMode ? d.players.filter((p) => p.alive && p.connected) : []
-    for (const { p, response, g, timeMs } of graded) {
+    const winners = this.turnMode && !this.chainMode ? d.players.filter((p) => p.alive && p.connected) : []
+    for (const { p, response, g: raw, timeMs } of graded) {
+      // In a chain, the player who broke it is the one who got it wrong.
+      const g = this.chainMode ? { ...raw, correct: p.alive && p.found.length > 0 } : raw
       const streak = g.correct ? p.streak + 1 : 0
       let points = scoreAnswer({ grade: g, d: ch.d, timeMs, limitMs, streak, rules }).total
       // Same rare answer given by several players: they share its points.
@@ -342,7 +399,8 @@ export class Room {
       p.timeMs += Math.max(0, timeMs)
       results.push({ id: p.id, answer: describe(ch, response), points, correct: g.correct })
     }
-    d.reveal = { ...revealOf(ch), results }
+    const run = this.chainMode ? d.runs[d.index] : undefined
+    d.reveal = { ...(run ? { answer: `Run terminée : ${run.links.length - 1} maillon${run.links.length > 2 ? 's' : ''}`, explanation: run.end ?? undefined } : revealOf(ch)), results }
     d.turn = null
     d.phase = 'reveal'
     d.deadline = now + REVEAL_MS
@@ -408,6 +466,7 @@ export class Room {
       reveal: d.phase === 'reveal' ? d.reveal : null,
       turn: d.turn ? { playerId: d.turn.order[d.turn.pos], deadline: d.turn.deadline, used: d.turn.used } : null,
       final: d.final,
+      runs: d.runs ?? [],
     }
   }
 }

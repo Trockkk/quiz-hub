@@ -1,5 +1,6 @@
 // The game catalogue. To add a mini-game: write a generator (or a custom component), then add one entry here.
 import * as culture from './games/culture.ts'
+import * as football from './games/football.ts'
 import * as geo from './games/geo.ts'
 import * as logic from './games/logic.ts'
 import * as special from './games/special.ts'
@@ -39,6 +40,7 @@ export const PORTALS: Portal[] = [
   { id: 'logique', title: 'Jeux de logique', icon: '🧩', color: '#06b6d4', description: 'Suites, intrus, connexions, classements et enquêtes à résoudre.' },
   { id: 'mots', title: 'Jeux de mots', icon: '🔤', color: '#eab308', description: 'Mot mystère, anagrammes et associations de mots.' },
   { id: 'rapidite', title: 'Défis de rapidité', icon: '⚡', color: '#f97316', description: 'Réflexes, calcul mental, mémoire et questions contre la montre.' },
+  { id: 'football', title: 'Football', icon: '⚽', color: '#22c55e', description: 'Plus de 250 joueurs, leurs clubs et leurs sélections : quiz, effectifs et relais de coéquipiers entre amis.' },
   { id: 'multi', title: 'Jeux multijoueurs', icon: '👥', color: '#6366f1', description: 'Salons privés en temps réel : affrontez vos amis avec un simple code.' },
   { id: 'quotidien', title: 'Défis quotidiens', icon: '📅', color: '#ec4899', description: 'Un défi identique pour tous chaque jour, et le boss final.' },
 ]
@@ -294,6 +296,23 @@ export const GAMES: GameMeta[] = [
     fixedDifficulty: 'Progressive : facile → expert',
     rules: ['15 épreuves mêlant quiz, drapeaux, estimations, chronologie, logique…', 'Chaque étape est plus difficile. Trois erreurs et le boss vous terrasse.', 'Un rang (S, A, B, C, D) récompense votre performance.'],
     options: { questionTime: [15, 30, null] }, defaults: { count: 15, questionTime: 30 }, engine: { lives: 3, ...streak(0.1, 0.5) }, generate: special.boss,
+  },
+
+  // ---------- Football ----------
+  {
+    id: 'foot-chain', title: 'Le relais des coéquipiers', tagline: 'Citez un joueur qui a joué avec le précédent… à l’infini, jusqu’à l’erreur.', icon: '🔗', portal: 'football', alsoIn: ['multi'], type: 'quiz', modes: ['multi'], multiOnly: true,
+    rules: ['Un joueur de départ est tiré au sort. Chacun son tour, citez un joueur qui a déjà joué avec le dernier cité (même club la même saison, ou même sélection).', 'Une erreur ou le chrono écoulé met fin à la run. Un nom inconnu de la base ou déjà cité : réessayez.', '20 points par maillon × difficulté. La run et tous les joueurs cités restent affichés jusqu’à la fin.'],
+    options: { difficulty: true, count: [1, 3, 5], questionTime: [10, 15, 20, 30] }, defaults: { count: 1, questionTime: 15 }, engine: { noSpeedBonus: true }, generate: football.chain,
+  },
+  {
+    id: 'foot-quiz', title: 'Le quiz foot', tagline: 'Clubs, sélections et coéquipiers de plus de 250 joueurs.', icon: '⚽', portal: 'football', type: 'quiz', modes: ['solo', 'multi'],
+    rules: ['Trois types de questions : dans quel club, pour quelle sélection, avec quel coéquipier.', 'Facile : les stars. Expert : des joueurs connus surtout des passionnés.'],
+    options: { difficulty: true, count: COUNTS, customCount: true, questionTime: Q_TIMES, explanations: true }, defaults: {}, engine: streak(0.1, 0.5), generate: football.quiz,
+  },
+  {
+    id: 'foot-squads', title: 'Les effectifs', tagline: 'Un club ou une sélection : citez un maximum de joueurs passés par là.', icon: '📋', portal: 'football', type: 'quiz', modes: ['solo', 'multi'],
+    rules: ['Tapez un maximum de joueurs passés par le club ou la sélection.', 'Seuls les joueurs de la base comptent : les manquants sont affichés à la fin.', '20 points par joueur valide × difficulté.'],
+    options: { difficulty: true, count: [1, 2, 3, 5], questionTime: [60, 90, 120, 180] }, defaults: { count: 2, questionTime: 90 }, engine: { noSpeedBonus: true }, generate: football.squads,
   },
 
   // ---------- Multiplayer only ----------

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { configFor, getGame } from '../core/catalog'
 import { daily, todayKey } from '../core/games/special'
 import type { Challenge } from '../core/types'
-import { content } from '../content/index'
+import { content, loadFootballers } from '../content/index'
 import { Empty } from '../components/ui'
 import { href, navigate } from '../lib/router'
 import { getSave } from '../lib/store'
@@ -21,7 +21,19 @@ export function PlayPage({ id }: { id: string }) {
 
   if (game.custom === 'memory') return <Memory key={attempt} game={game} config={config} onReplay={replay} onExit={exit} />
   if (game.custom === 'reflex') return <Reflex key={attempt} game={game} config={config} onReplay={replay} onExit={exit} />
-  return <Round key={attempt} id={id} onReplay={replay} onExit={exit} />
+  const round = <Round key={attempt} id={id} onReplay={replay} onExit={exit} />
+  return game.portal === 'football' ? <Footballers>{round}</Footballers> : round
+}
+
+/** Waits for the footballer base, downloaded only for football games. */
+function Footballers({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(content.footballers.length > 0)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    if (!ready) loadFootballers().then(() => setReady(true), () => setFailed(true))
+  }, [ready])
+  if (failed) return <Empty>Impossible de charger la base des joueurs. Vérifiez votre connexion puis rechargez la page.</Empty>
+  return ready ? children : <div className="card p-10 text-center text-slate-400"><span className="animate-pulse">Chargement des joueurs…</span></div>
 }
 
 function Round({ id, onReplay, onExit }: { id: string; onReplay: () => void; onExit: () => void }) {

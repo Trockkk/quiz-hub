@@ -117,6 +117,21 @@ export interface PlayerFinal {
   bestStreak: number
 }
 
+/** Teammate chain: one cited footballer, who cited it and where they played with the previous one. */
+export interface ChainLink {
+  /** Wikidata id: homonyms stay distinct */
+  id: number
+  name: string
+  by: string | null
+  via: string | null
+}
+
+export interface ChainRun {
+  links: ChainLink[]
+  /** why the run stopped */
+  end: string | null
+}
+
 export interface PublicRoom {
   code: string
   hostId: string | null
@@ -134,6 +149,8 @@ export interface PublicRoom {
   /** "last one standing" */
   turn: { playerId: string; deadline: number; used: string[] } | null
   final: PlayerFinal[] | null
+  /** teammate chain: one run per round */
+  runs: ChainRun[]
 }
 
 export type ClientMessage =

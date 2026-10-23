@@ -165,6 +165,19 @@ export interface Ranking {
   items: { n: string; v: number }[]
 }
 
+export interface Footballer {
+  /** Wikidata number (Q…) */
+  id: number
+  n: string
+  alt?: string[]
+  /** 1 = superstar … 4 = known by fans (rank by number of Wikipedia languages) */
+  d: Difficulty
+  /** clubs: [club, start year, end year]; two spans overlapping means they played together */
+  c: [string, number, number][]
+  /** senior national teams, same format */
+  sel: [string, number, number][]
+}
+
 export interface Content {
   themes: { id: string; label: string; icon: string; color: string }[]
   questions: Question[]
@@ -182,6 +195,7 @@ export interface Content {
   rankings: Ranking[]
   countries: Country[]
   territories: Territory[]
+  footballers: Footballer[]
 }
 
 // ---------- Challenges (one question / round, whatever the game) ----------
@@ -253,6 +267,8 @@ export interface ListChallenge extends ChallengeBase {
   /** each answer must start with the last letter of the previous one */
   chain?: boolean
   exclusive?: string[]
+  /** teammate chain: Wikidata id of the footballer the run starts from */
+  start?: number
 }
 
 export interface RareChallenge extends ChallengeBase {
@@ -305,7 +321,7 @@ export interface Grade {
 
 // ---------- Games ----------
 
-export type PortalId = 'culture' | 'logos' | 'drapeaux' | 'capitales' | 'logique' | 'mots' | 'rapidite' | 'multi' | 'quotidien'
+export type PortalId = 'culture' | 'logos' | 'drapeaux' | 'capitales' | 'logique' | 'mots' | 'rapidite' | 'multi' | 'quotidien' | 'football'
 export type GameType = 'quiz' | 'visuel' | 'logique' | 'mots' | 'rapidite' | 'estimation'
 export type PlayMode = 'solo' | 'multi' | 'daily'
 export type AnswerType = 'qcm' | 'text' | 'mixed'

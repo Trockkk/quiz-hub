@@ -1,6 +1,6 @@
 // All game content, assembled from the JSON files of this folder.
 // To add questions: edit the JSON files (see README). `npm test` checks their validity.
-import type { Content, Question } from '../core/types.ts'
+import type { Content, Difficulty, Footballer, Question } from '../core/types.ts'
 import cases from './cases.json' with { type: 'json' }
 import clues from './clues.json' with { type: 'json' }
 import connections from './connections.json' with { type: 'json' }
@@ -65,4 +65,26 @@ export const content = {
   rankings,
   countries,
   territories,
+  footballers: [],
 } as Content
+
+/** footballers.json as written by scripts/build-footballers.mjs: team names shared, spans flattened. */
+interface RawFootballers {
+  teams: [string, 0 | 1][]
+  players: [number, string, Difficulty, number[], string[]?][]
+}
+
+let loading: Promise<void> | undefined
+
+/** The footballer base is big (tens of thousands of players): loaded only when a football game needs it. */
+export function loadFootballers(): Promise<void> {
+  loading ??= import('./footballers.json').then(({ default: raw }) => {
+    const { teams, players } = raw as unknown as RawFootballers
+    content.footballers = players.map(([id, n, d, flat, alt]): Footballer => {
+      const p: Footballer = { id, n, d, c: [], sel: [], ...(alt && { alt }) }
+      for (let i = 0; i < flat.length; i += 3) (teams[flat[i]][1] ? p.sel : p.c).push([teams[flat[i]][0], flat[i + 1], flat[i + 2]])
+      return p
+    })
+  })
+  return loading
+}

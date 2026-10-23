@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "test": "node --test \"tests/**/*.test.ts\"",
     "preview": "vite preview",
-    "logos": "node scripts/build-logos.mjs"
+    "logos": "node scripts/build-logos.mjs",
+    "footballers": "node scripts/build-footballers.mjs"
   },
   "dependencies": {
     "flag-icons": "^7.6.0",
