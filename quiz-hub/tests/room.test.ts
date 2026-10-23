@@ -157,32 +157,31 @@ test('categories duel, "last one standing": turns, validation and elimination', 
   assert.ok(TURN_MS > 0)
 })
 
-test('teammate chain: valid links extend the run, unknown or repeated names can be retried, a wrong link ends it', () => {
+test('teammate chain: a random player picks the first footballer, repeats and unknown names can be retried, a wrong link ends it', () => {
   const { room, ids } = setup(2)
   startGame(room, ids[0], 'foot-chain', { questionTime: 10 })
-  const ch = current(room)
-  if (ch.kind !== 'list') return assert.fail('chain is a list challenge')
-  const t = room.data.turn!
-  const [first, second] = t.order
-  const start = footballerById(content, ch.start!)!
-  const mate = content.footballers.find((f) => f.id !== start.id && teammates(start, f))!
+  const [first, second] = room.data.turn!.order
+  const run = room.data.runs[0]
+  assert.equal(run.links.length, 0, 'no starting player imposed')
   const at = room.data.questionStart
   const msgOf = (out: ReturnType<Room['handle']>) => (out[0].msg.t === 'ack' ? out[0].msg : assert.fail('ack expected'))
   assert.equal(msgOf(room.handle(first, { t: 'guess', index: 0, text: 'Zzzqx Inconnu' }, at + 10, 1)).ok, false)
   assert.equal(room.data.turn!.order[room.data.turn!.pos], first, 'unknown name: still your turn')
-  assert.equal(msgOf(room.handle(first, { t: 'guess', index: 0, text: start.n }, at + 15, 1)).msg, 'Joueur déjà cité')
-  assert.equal(room.data.turn!.order[room.data.turn!.pos], first, 'already cited: still your turn')
-  room.handle(first, { t: 'guess', index: 0, text: mate.n }, at + 20, 1)
-  const run = room.data.runs[0]
-  assert.equal(run.links.length, 2)
+  room.handle(first, { t: 'guess', index: 0, text: 'Lionel Messi' }, at + 15, 1)
+  assert.equal(run.links[0].name, 'Lionel Messi')
   assert.equal(room.data.turn!.order[room.data.turn!.pos], second)
-  assert.equal(room.data.turn!.deadline, at + 20 + 10_000, 'turn time comes from the settings')
+  assert.equal(msgOf(room.handle(second, { t: 'guess', index: 0, text: 'messi' }, at + 20, 1)).msg, 'Joueur déjà cité')
+  assert.equal(room.data.turn!.order[room.data.turn!.pos], second, 'already cited: still your turn')
+  room.handle(second, { t: 'guess', index: 0, text: 'Neymar' }, at + 25, 1)
+  assert.equal(run.links.length, 2)
+  assert.match(run.links[1].via!, /Barcelone|Paris|Brésil|PSG/)
+  assert.equal(room.data.turn!.deadline, at + 25 + 10_000, 'turn time comes from the settings')
   const last = footballerById(content, run.links[1].id)!
   const stranger = content.footballers.find((f) => findFootballers(content, f.n).every((x) => !teammates(last, x) && !run.links.some((l) => l.id === x.id)))!
-  room.handle(second, { t: 'guess', index: 0, text: stranger.n }, at + 30, 1)
+  room.handle(first, { t: 'guess', index: 0, text: stranger.n }, at + 30, 1)
   assert.equal(room.data.phase, 'reveal', 'a wrong link ends the run')
   assert.match(run.end!, /jamais joué/)
-  assert.ok(room.player(first)!.score > 0 && room.player(second)!.score === 0)
+  assert.ok(room.player(second)!.score > 0 && room.player(first)!.score === 0, 'naming the first footballer scores nothing')
   assert.equal(room.publicState(at).runs[0].links.length, 2, 'the run stays visible')
 })
 

@@ -287,9 +287,18 @@ export class Room {
   private chainGuess(p: PlayerState, text: string, now: number): Outgoing[] {
     const d = this.data
     const run = d.runs[d.index]
-    const prev = footballerById(this.content, run.links.at(-1)!.id)!
     const candidates = findFootballers(this.content, text)
     if (!candidates.length) return [ack(p.id, false, `« ${text} » : joueur introuvable, essayez un autre nom.`)]
+    const last = run.links.at(-1)
+    if (!last) {
+      // Opening the run: any footballer, the most famous one with that name. It scores nothing.
+      const first = candidates[0]
+      run.links.push({ id: first.id, name: first.n, by: p.name, via: null })
+      d.turn!.used.push(first.n)
+      this.advanceTurn(now)
+      return [ack(p.id, true, `✓ Départ : ${first.n}`, p.found)]
+    }
+    const prev = footballerById(this.content, last.id)!
     const cited = new Set(run.links.map((l) => l.id))
     const mates = candidates.filter((f) => teammates(prev, f))
     const pick = mates.find((f) => !cited.has(f.id))
@@ -352,12 +361,12 @@ export class Room {
     }
     if (this.turnMode) {
       const order = [...this.connected()].sort((a, b) => a.joinedAt - b.joinedAt).map((p) => p.id)
-      // Rotate who starts at each round.
-      const start = order.length ? index % order.length : 0
+      // Rotate who starts at each round; in a teammate chain, a random player opens and names the first footballer.
       const ch = this.ch
-      const first = ch?.kind === 'list' && ch.start !== undefined ? footballerById(this.content, ch.start) : undefined
-      d.turn = { order: [...order.slice(start), ...order.slice(0, start)], pos: 0, deadline: now + this.turnMs, used: first ? [first.n] : [] }
-      if (this.chainMode) d.runs[index] = { links: first ? [{ id: first.id, name: first.n, by: null, via: null }] : [], end: null }
+      const opener = ch?.kind === 'list' && ch.opener !== undefined ? Math.floor(ch.opener * order.length) : index
+      const start = order.length ? opener % order.length : 0
+      d.turn = { order: [...order.slice(start), ...order.slice(0, start)], pos: 0, deadline: now + this.turnMs, used: [] }
+      if (this.chainMode) d.runs[index] = { links: [], end: null }
       d.deadline = null
     } else {
       d.turn = null
@@ -400,7 +409,7 @@ export class Room {
       results.push({ id: p.id, answer: describe(ch, response), points, correct: g.correct })
     }
     const run = this.chainMode ? d.runs[d.index] : undefined
-    d.reveal = { ...(run ? { answer: `Run terminée : ${run.links.length - 1} maillon${run.links.length > 2 ? 's' : ''}`, explanation: run.end ?? undefined } : revealOf(ch)), results }
+    d.reveal = { ...(run ? { answer: `Run terminée : ${Math.max(0, run.links.length - 1)} maillon${run.links.length > 2 ? 's' : ''}`, explanation: run.end ?? undefined } : revealOf(ch)), results }
     d.turn = null
     d.phase = 'reveal'
     d.deadline = now + REVEAL_MS

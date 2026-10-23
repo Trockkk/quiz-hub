@@ -301,8 +301,8 @@ export const GAMES: GameMeta[] = [
   // ---------- Football ----------
   {
     id: 'foot-chain', title: 'Le relais des coéquipiers', tagline: 'Citez un joueur qui a joué avec le précédent… à l’infini, jusqu’à l’erreur.', icon: '🔗', portal: 'football', alsoIn: ['multi'], type: 'quiz', modes: ['multi'], multiOnly: true,
-    rules: ['Un joueur de départ est tiré au sort. Chacun son tour, citez un joueur qui a déjà joué avec le dernier cité (même club la même saison, ou même sélection).', 'Une erreur ou le chrono écoulé met fin à la run. Un nom inconnu de la base ou déjà cité : réessayez.', '20 points par maillon × difficulté. La run et tous les joueurs cités restent affichés jusqu’à la fin.'],
-    options: { difficulty: true, count: [1, 3, 5], questionTime: [10, 15, 20, 30] }, defaults: { count: 1, questionTime: 15 }, engine: { noSpeedBonus: true }, generate: football.chain,
+    rules: ['Un joueur du salon, tiré au sort, choisit librement le footballeur de départ.', 'Ensuite, chacun son tour, citez un footballeur qui a déjà joué avec le dernier cité (même club en même temps, ou même sélection).', 'Une erreur ou le chrono écoulé met fin à la run. Un nom introuvable ou « Joueur déjà cité » : réessayez.', '20 points par maillon. La run et tous les joueurs cités restent affichés jusqu’à la fin.'],
+    options: { count: [1, 3, 5], questionTime: [10, 15, 20, 30] }, defaults: { count: 1, questionTime: 15 }, engine: { noSpeedBonus: true }, generate: football.chain,
   },
   {
     id: 'foot-quiz', title: 'Le quiz foot', tagline: 'Clubs, sélections et coéquipiers de plus de 250 joueurs.', icon: '⚽', portal: 'football', type: 'quiz', modes: ['solo', 'multi'],

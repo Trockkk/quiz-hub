@@ -267,8 +267,8 @@ export interface ListChallenge extends ChallengeBase {
   /** each answer must start with the last letter of the previous one */
   chain?: boolean
   exclusive?: string[]
-  /** teammate chain: Wikidata id of the footballer the run starts from */
-  start?: number
+  /** teammate chain: random draw in [0, 1) choosing the player who names the first footballer */
+  opener?: number
 }
 
 export interface RareChallenge extends ChallengeBase {

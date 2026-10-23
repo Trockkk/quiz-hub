@@ -81,17 +81,15 @@ export function findFootballers(content: Content, guess: string): Footballer[] {
 const withIds = (players: Footballer[]) => players.map((p) => ({ id: String(p.id), d: p.d, p }))
 const inBand = (ctx: GenContext) => ctx.content.footballers.filter((p) => BAND[ctx.config.difficulty].includes(p.d))
 
-/** Teammate chain (multiplayer): one run per round, starting from a footballer of the chosen fame. */
+/** Teammate chain (multiplayer): one run per round. Names are checked against the whole base in room.ts. */
 export function chain(ctx: GenContext): Challenge[] {
-  const band = inBand(ctx)
-  return sample(band.length ? band : ctx.content.footballers, wanted(ctx.config, 1), ctx.rng).map((p) => ({
+  return Array.from({ length: wanted(ctx.config, 1) }, (_, i) => ({
     kind: 'list',
-    id: `foot-chain-${p.id}`,
+    id: `foot-chain-${i + 1}`,
     d: ctx.config.difficulty,
-    prompt: `Départ : ${p.n}. Chacun son tour, citez un joueur qui a joué avec le dernier cité.`,
-    // Names are checked against the whole base (room.ts): only the starting player is stored here.
-    answers: footballerAnswers([p]),
-    start: p.id,
+    prompt: 'Le premier joueur choisit librement le footballeur de départ. Ensuite, chacun son tour, citez un joueur qui a joué avec le dernier cité.',
+    answers: [],
+    opener: ctx.rng(),
   }))
 }
 

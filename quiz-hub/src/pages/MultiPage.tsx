@@ -479,7 +479,7 @@ function ListAnswer({ ch, room, you, post, ack }: { ch: Extract<PublicChallenge,
     <div>
       {turn && (
         <p className={`mb-3 rounded-xl p-3 text-center font-semibold ${myTurn ? 'bg-amber-500/20 text-amber-100' : 'bg-white/5 text-slate-300'}`}>
-          {me && !me.alive ? '💀 Vous êtes éliminé pour cette manche.' : myTurn ? (run ? `🎯 À vous ! Un joueur qui a joué avec ${run.links.at(-1)?.name}.` : '🎯 À vous ! Une réponse inédite avant la fin du chrono.') : `Au tour de ${room.players.find((p) => p.id === turn.playerId)?.name ?? '…'}`}
+          {me && !me.alive ? '💀 Vous êtes éliminé pour cette manche.' : myTurn ? (run ? (run.links.length ? `🎯 À vous ! Un joueur qui a joué avec ${run.links.at(-1)!.name}.` : '🎯 À vous ! Choisissez le footballeur de départ, celui que vous voulez.') : '🎯 À vous ! Une réponse inédite avant la fin du chrono.') : `Au tour de ${room.players.find((p) => p.id === turn.playerId)?.name ?? '…'}`}
         </p>
       )}
       <form onSubmit={submit} className="flex gap-2">
@@ -503,7 +503,7 @@ function ListAnswer({ ch, room, you, post, ack }: { ch: Extract<PublicChallenge,
 
 /** Teammate chain: the run so far, latest first. */
 function RunView({ run, title }: { run: ChainRun; title?: string }) {
-  const n = run.links.length - 1
+  const n = Math.max(0, run.links.length - 1)
   return (
     <div className="mt-4">
       <p className="text-sm font-semibold">{title && `${title} · `}🔗 {n} maillon{n > 1 ? 's' : ''} · {run.links.length} joueur{run.links.length > 1 ? 's' : ''} cité{run.links.length > 1 ? 's' : ''}</p>
@@ -513,7 +513,7 @@ function RunView({ run, title }: { run: ChainRun; title?: string }) {
           <li key={l.id} className={`flex flex-wrap items-baseline gap-x-2 rounded-lg p-2 ${i === 0 ? 'bg-emerald-500/10' : 'bg-white/5'}`}>
             <span className="tabular-nums text-slate-500">{run.links.length - i}.</span>
             <strong>{l.name}</strong>
-            <span className="text-xs text-slate-400">{l.by ? `${l.via} · cité par ${l.by}` : 'joueur de départ'}</span>
+            <span className="text-xs text-slate-400">{l.via ? `${l.via} · cité par ${l.by}` : `départ · choisi par ${l.by}`}</span>
           </li>
         ))}
       </ol>

@@ -42,6 +42,8 @@ function checkChallenge(ch: Challenge, where: string) {
   if (ch.kind === 'order') assert.ok(ch.items.length >= 3 && ch.values.length === ch.items.length)
   if (ch.kind === 'estimate') assert.ok(ch.scale > 0)
   if (ch.kind === 'connections') assert.equal(ch.items.length, ch.groups.length * 4)
+  // Teammate chains are checked by the room against the whole base: nothing to grade here.
+  if (ch.kind === 'list' && ch.opener !== undefined) return assert.ok(ch.opener >= 0 && ch.opener < 1)
   const g = grade(ch, perfect(ch))
   assert.ok(g.correct, `${where}: perfect answer graded wrong (${ch.prompt})`)
 }
