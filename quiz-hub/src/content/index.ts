@@ -78,7 +78,7 @@ let loading: Promise<void> | undefined
 
 /** The footballer base is big (tens of thousands of players): loaded only when a football game needs it. */
 export function loadFootballers(): Promise<void> {
-  loading ??= import('./footballers.json').then(({ default: raw }) => {
+  loading ??= import('./footballers.json', { with: { type: 'json' } }).then(({ default: raw }) => {
     const { teams, players } = raw as unknown as RawFootballers
     content.footballers = players.map(([id, n, d, flat, alt]): Footballer => {
       const p: Footballer = { id, n, d, c: [], sel: [], ...(alt && { alt }) }

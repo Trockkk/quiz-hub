@@ -98,7 +98,8 @@ export function chain(ctx: GenContext): Challenge[] {
 /** Football quiz: club, national team, or teammate of a footballer. Wrong choices come from players of the same fame. */
 export function quiz(ctx: GenContext): Challenge[] {
   const { rng } = ctx
-  const band = inBand(ctx)
+  // Some players only have a national team on Wikidata: no club question possible.
+  const band = inBand(ctx).filter((p) => p.c.length)
   const clubs = [...new Set(band.flatMap((p) => p.c.map((s) => s[0])))]
   const nations = [...new Set(band.flatMap((p) => p.sel.map((s) => s[0])))]
   return pickByDifficulty(withIds(band), ctx.config.difficulty, wanted(ctx.config, 10), ctx).map(({ id, d, p }, i): McqChallenge => {
